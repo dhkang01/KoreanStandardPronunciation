@@ -20,7 +20,7 @@ import os
 import unicodedata
 from typing import List, Optional
 
-from transformers.tokenization_utils import PreTrainedTokenizer
+from transformers import PreTrainedTokenizer
 
 logger = logging.getLogger(__name__)
 
@@ -108,6 +108,14 @@ class KoCharElectraTokenizer(PreTrainedTokenizer):
         tokenize_chinese_chars=True,
         **kwargs
     ):
+        if not os.path.isfile(vocab_file):
+            raise ValueError(
+                "Can't find a vocabulary file at path '{}'. To load the vocabulary from a Google pretrained "
+                "model use `tokenizer = BertTokenizer.from_pretrained(PRETRAINED_MODEL_NAME)`".format(vocab_file)
+            )
+        self.vocab = load_vocab(vocab_file)
+        self.ids_to_tokens = collections.OrderedDict([(ids, tok) for tok, ids in self.vocab.items()])
+
         super().__init__(
             unk_token=unk_token,
             sep_token=sep_token,
@@ -116,14 +124,6 @@ class KoCharElectraTokenizer(PreTrainedTokenizer):
             mask_token=mask_token,
             **kwargs,
         )
-
-        if not os.path.isfile(vocab_file):
-            raise ValueError(
-                "Can't find a vocabulary file at path '{}'. To load the vocabulary from a Google pretrained "
-                "model use `tokenizer = BertTokenizer.from_pretrained(PRETRAINED_MODEL_NAME)`".format(vocab_file)
-            )
-        self.vocab = load_vocab(vocab_file)
-        self.ids_to_tokens = collections.OrderedDict([(ids, tok) for tok, ids in self.vocab.items()])
 
     @property
     def vocab_size(self):
