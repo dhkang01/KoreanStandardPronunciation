@@ -224,7 +224,7 @@ class KoCharElectraTokenizer(PreTrainedTokenizer):
             return len(cls + token_ids_0 + sep) * [0]
         return len(cls + token_ids_0 + sep) * [0] + len(token_ids_1 + sep) * [1]
 
-    def save_vocabulary(self, vocab_path):
+    def save_vocabulary(self, save_directory, filename_prefix=None) -> tuple:
         """
         Save the sentencepiece vocabulary (copy original file) and special tokens file to a directory.
         Args:
@@ -233,6 +233,16 @@ class KoCharElectraTokenizer(PreTrainedTokenizer):
         Returns:
             :obj:`Tuple(str)`: Paths to the files saved.
         """
+
+        if not os.path.isdir(save_directory):
+            os.makedirs(save_directory, exist_ok=True)
+
+        if filename_prefix is None:
+            vocab_path = os.path.join(save_directory, VOCAB_FILES_NAMES["vocab_file"])
+        else:
+            fname = f"{filename_prefix}-{VOCAB_FILES_NAMES['vocab_file']}"
+            vocab_path = os.path.join(save_directory, fname)
+
         index = 0
         if os.path.isdir(vocab_path):
             vocab_file = os.path.join(vocab_path, VOCAB_FILES_NAMES["vocab_file"])
